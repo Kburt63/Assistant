@@ -1,10 +1,15 @@
 # Description: This file contains the code to create an assistant using the OpenAI API.
 from argparse import FileType
 from calendar import c
+from email import message
 from genericpath import exists
+from mailbox import Message
+from math import e
 from re import A
+import re
 from ssl import Purpose
 from threading import Thread
+from click import File
 #from nbconvert import PDFExporter
 from openai import OpenAI
 #from sk import my_sk
@@ -24,64 +29,111 @@ client = OpenAI(api_key=api_key)
 # Create a list to store the file IDs
 file_ids = []
 
-# upload files
-with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/How_to_Coach_author_Mind_Tools.pdf", "rb") as file:
-  response = client.files.create(file=file, purpose="assistants")
-file_ids.append(response.id)
+existing_ids = []
 
-with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/4 Coaching Fundamentals author Ana Karakusevic.pdf", "rb") as file:
-  response = client.files.create(file=file, purpose="assistants")
-file_ids.append(response.id)
+exists_flag = 0
 
-with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/1. Book Psychiatry Author Dr Harsh Vardhan Dr Jagdish Prasad Dr R C Jiloha.pdf", "rb") as file:
-  response = client.files.create(file=file, purpose="assistants")
-file_ids.append(response.id)
+thread = Thread()
 
-with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/3 Mentoring and coaching author Alexa Michae.pdf", "rb") as file:
-  response = client.files.create(file=file, purpose="assistants")
-file_ids.append(response.id)
+run = None
 
-with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/5 Critical Psychiatry A Brief Overview Author Hugh Middleton Joanna Moncrieff.pdf", "rb") as file:
-  response = client.files.create(file=file, purpose="assistants")
-file_ids.append(response.id)
+user_message = ""
 
-with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/8 Coaching Employees Toward better performarce author Helpside.pdf", "rb") as file:
-  response = client.files.create(file=file, purpose="assistants")
-file_ids.append(response.id)
+file1 = File()
+file2 = File()
+file3 = File()
+file4 = File()
+file5 = File()
+file6 = File()
+file7 = File()
+file8 = File()
+file9 = File()
 
-with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/12 Coaching Employees to Reach Optimal Performance author  Deloitte US.pdf", "rb") as file:
-  response = client.files.create(file=file, purpose="assistants")
-file_ids.append(response.id)
+def check_id_file_exists():
+    try:
+        with open('file_ids.txt', 'r') as file:
+            for line in file:
+                existing_ids.append(line.strip())  # Remove newline characters
+            exists_flag = 1
+    except FileNotFoundError:
+        print("File not found. Will create a new one if a new ID is added.")
+        exists_flag = 0
+    return exists_flag, existing_ids
 
-with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/19 Emotion Coaching author Media & File Management.pdf", "rb") as file:
-  response = client.files.create(file=file, purpose="assistants")
-file_ids.append(response.id)
+def save_file_ids(file_ids):
+    # Specify the path to the file where you want to save the IDs
+    file_path = 'file_ids.txt'    
+    # Open the file in write mode (this will overwrite existing content)
+    with open(file_path, 'w') as file:
+        # Iterate over each ID in the list of file IDs
+        for file_id in file_ids:
+            # Write each ID to the file, followed by a newline character
+            file.write(file_id + '\n')   
+        print(f"File IDs have been saved to {file_path}")
 
-with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/21 Coaching to personality types author Mnia.pdf", "rb") as file:
-  response = client.files.create(file=file, purpose="assistants")
-file_ids.append(response.id)
-
-file1 = client.files.retrieve(file_ids[0])
-
-file2 = client.files.retrieve(file_ids[1])
-
-file3 = client.files.retrieve(file_ids[2])
-
-file4 = client.files.retrieve(file_ids[3])
-
-file5 = client.files.retrieve(file_ids[4])
-
-file6 = client.files.retrieve(file_ids[5])
-
-file7 = client.files.retrieve(file_ids[6])
-
-file8 = client.files.retrieve(file_ids[7])
-
-file9 = client.files.retrieve(file_ids[8])
+def upload_files():
+    if exists_flag == 1:
+        print("File exists")
+        # Read the file IDs from the file
+        file_ids = existing_ids
+        return file_ids   
+    elif exists_flag == 0:    
+        # upload files
+        with open("files/How_to_Coach_author_Mind_Tools.pdf", "rb") as file:
+            response = client.files.create(file=file, purpose="assistants")
+        file_ids.append(response.id)
+        
+        with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/4 Coaching Fundamentals author Ana Karakusevic.pdf", "rb") as file:
+            response = client.files.create(file=file, purpose="assistants")
+        file_ids.append(response.id)
+        
+        with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/1. Book Psychiatry Author Dr Harsh Vardhan Dr Jagdish Prasad Dr R C Jiloha.pdf", "rb") as file:
+            response = client.files.create(file=file, purpose="assistants")
+        file_ids.append(response.id)
+        
+        with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/3 Mentoring and coaching author Alexa Michae.pdf", "rb") as file:
+            response = client.files.create(file=file, purpose="assistants")
+        file_ids.append(response.id)
+        
+        with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/5 Critical Psychiatry A Brief Overview Author Hugh Middleton Joanna Moncrieff.pdf", "rb") as file:
+            response = client.files.create(file=file, purpose="assistants")
+        file_ids.append(response.id)
+        
+        with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/8 Coaching Employees Toward better performarce author Helpside.pdf", "rb") as file:
+            response = client.files.create(file=file, purpose="assistants")
+        file_ids.append(response.id)
+        
+        with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/12 Coaching Employees to Reach Optimal Performance author  Deloitte US.pdf", "rb") as file:
+            response = client.files.create(file=file, purpose="assistants")
+        file_ids.append(response.id)
+        
+        with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/19 Emotion Coaching author Media & File Management.pdf", "rb") as file:
+            response = client.files.create(file=file, purpose="assistants")
+        file_ids.append(response.id)
+        
+        with open("C:/Users/k-bur/Desktop/python_work/Assistant/files/21 Coaching to personality types author Mnia.pdf", "rb") as file:
+            response = client.files.create(file=file, purpose="assistants")
+        file_ids.append(response.id)
+        
+        file1 = client.files.retrieve(file_ids[0])
+        file2 = client.files.retrieve(file_ids[1])
+        file3 = client.files.retrieve(file_ids[2])
+        file4 = client.files.retrieve(file_ids[3])
+        file5 = client.files.retrieve(file_ids[4])
+        file6 = client.files.retrieve(file_ids[5])
+        file7 = client.files.retrieve(file_ids[6])
+        file8 = client.files.retrieve(file_ids[7])
+        file9 = client.files.retrieve(file_ids[8])
+        
+        # Save the file IDs to a file
+        save_file_ids(file_ids),
+        return file1, file2, file3, file4, file5, file6, file7, file8, file9
+    else:
+        print("Error")
 
 def create_assistant():
     
-    assistant_id_file = "C:/Users/k-bur/Desktop/python_work/Assistant/files/assistant_id_4.txt"
+    assistant_id_file = "files/assistant_id_4.txt"
     
     # Check if the assistant ID file exists
     if os.path.exists(assistant_id_file):
@@ -126,11 +178,11 @@ def create_thread():
     return thread
 
 #def create_message(thread, user_message):
-    #print(f"Adding user's message to the Thread: '{user_message}'") 
-    #message = client.beta.threads.messages.create(
-      #thread_id=thread.id,
-      #role="user",
-      #content=user_message
+#    print(f"Adding user's message to the Thread: '{user_message}'") 
+#    message = client.beta.threads.messages.create(
+##        thread_id=thread.id,
+#        role="user",
+##        content=user_message
 #)
 
 def send_message_and_run_assistant(thread, assistant, user_message):
@@ -140,12 +192,12 @@ def send_message_and_run_assistant(thread, assistant, user_message):
         role="user",
         content=user_message,
     )
-
     print("Running the Assistant to process the message..."),
     run = client.beta.threads.runs.create(
         thread_id=thread.id,
         assistant_id=assistant.id,
     )
+    print(f"Assistant run created with ID: {run.id}")
     return run
 
 # Poll the Run status and handle function calls
@@ -255,6 +307,9 @@ if __name__ == "__main__":
     # Initialize the Assistant and Thread
     assistant = create_assistant()
     thread = create_thread()
+    exists_flag, existing_ids = check_id_file_exists()
+    # Upload files
+    upload_files()
 
     while True:
         # Get user input
@@ -273,24 +328,25 @@ if __name__ == "__main__":
         # Display the final response
         display_final_response(thread, run)
 
-#delete the file
-file1.id = file_ids[0]
-file2.id = file_ids[1]
-file3.id = file_ids[2]
-file4.id = file_ids[3]
-file5.id = file_ids[4]
-file6.id = file_ids[5]
-file7.id = file_ids[6]
-file8.id = file_ids[7]
-file9.id = file_ids[8]
+if exists_flag == 0:
+    #delete the file
+    file1.id = file_ids[0]
+    file2.id = file_ids[1]
+    file3.id = file_ids[2]
+    file4.id = file_ids[3]
+    file5.id = file_ids[4]
+    file6.id = file_ids[5]
+    file7.id = file_ids[6]
+    file8.id = file_ids[7]
+    file9.id = file_ids[8]
 
-client.files.delete(file1.id)
-client.files.delete(file2.id)
-client.files.delete(file3.id)
-client.files.delete(file4.id)
-client.files.delete(file5.id)
-client.files.delete(file6.id)
-client.files.delete(file7.id)
-client.files.delete(file8.id)
-client.files.delete(file9.id)
-print("Files deleted")
+    client.files.delete(file1.id)
+    client.files.delete(file2.id)
+    client.files.delete(file3.id)
+    client.files.delete(file4.id)
+    client.files.delete(file5.id)
+    client.files.delete(file6.id)
+    client.files.delete(file7.id)
+    client.files.delete(file8.id)
+    client.files.delete(file9.id)
+    print("Files deleted")
